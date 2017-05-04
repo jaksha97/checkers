@@ -189,7 +189,6 @@ void check20::act(int i){
 	//m_SocketClient
 	stepClear();
 };
-//asdasd
 
 ////////////////////////////
 class Pril: public wxApp{
