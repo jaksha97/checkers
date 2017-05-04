@@ -1,4 +1,6 @@
 #include <wx/wx.h>
+#include <wx/socket.h>
+#include <wx/valgen.h>
 
 int e = 15;			//************************
 int rad = 12;
@@ -47,11 +49,10 @@ class AddE: public wxFrame{
 // Функция изменения цвета
 //    void CangeColor(wxCommandEvent& event);
 };
+
 // Класс, описывающий панель для рисования
 class DrawPanel: public wxPanel{
-
-  public:
-	
+  public:	
 // в конструкторе указывается адрес объекта, который ее содержит
         DrawPanel(wxPanel *parent);
  // рисовалка
@@ -184,9 +185,11 @@ void check20::act(int i){
 		if(next[1].dead != -1)
 			a[next[1].dead] = 0;
 	}
-
+	
+	//m_SocketClient
 	stepClear();
 };
+//asdasd
 
 ////////////////////////////
 class Pril: public wxApp{
