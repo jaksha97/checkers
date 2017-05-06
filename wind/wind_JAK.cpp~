@@ -241,8 +241,3 @@ bool Pril::OnInit()
   ae->Show(true);
   return true;
 };
-
-
-
-
-
