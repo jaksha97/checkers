@@ -3,15 +3,15 @@
 #include <wx/valgen.h>
 
 struct Step{
-	int green;	//**************************
+	int green;	
 	int who;
-	int dead[4];	//***************************
+	int dead[4];	
 	
 };
 
 class check20{
 public:
-	int a[20];  // указатель на область памяти  для игрового поля
+	int a[20];  
 	wxPoint pos[20];
 	Step go[2];	
 	int turn;
@@ -42,12 +42,13 @@ class DrawPanel: public wxPanel{
   public:	
 // в конструкторе указывается адрес объекта, который ее содержит
 
-        DrawPanel(wxPanel *parent);
+        DrawPanel(wxPanel *parent, wxStatusBar *sb);
  // рисовалка
         void OnPaint(wxPaintEvent & event);
 // составляющие цвета
 	void OnDclick(wxMouseEvent& event); ///////////////////////////////////////////////
 	check20 pl;
+	wxStatusBar *dpsb;
 };
 
 // Фрайм  который содержит панель, на которой две кнопки,

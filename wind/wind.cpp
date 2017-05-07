@@ -106,12 +106,18 @@ void check20::act(int i){
 				a[go[1].dead[j]] = FREE;	
 	}
 
-	if(turn == WHITE){
+
+	if(turn == WHITE)
 		turn = BLACK;
-	} else
+	else 
 		turn = WHITE;	
+	
+
 	//m_SocketClient
 	stepClear();
+
+
+
 };
 ////////////////////////////
 
@@ -120,43 +126,30 @@ const int ID_BUTTON =1002;
 
 //constructor AddE
 AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,wxSize(500,400)){
-// создание панельки для кнопок и рисовалки
-    m_pan= new wxPanel(this,wxID_ANY);
-// прицепили на эту панельку первую кнопку
-    bt= new wxButton(m_pan,wxID_EXIT,wxT("Quit"),wxPoint(10,10));
-    ng= new wxButton(m_pan,ID_BUTTON,wxT("New"),wxPoint(100,10));
-// прицепили вторую кнопку
-//    bp= new wxButton(m_pan,ID_BUTTON , wxT("Red"), wxPoint(100, 10));
 
-// прицепили панельку для рисования
-    dp=new DrawPanel(m_pan);
+	ss<<wxT("QQQ!");
+	sb=CreateStatusBar();
+	sb->SetStatusText(ss);
 
-// создали полоску для менюшки
-    menubar = new wxMenuBar;
+	m_pan= new wxPanel(this,wxID_ANY);
 
-// создали менюшку
-    file = new wxMenu;
-// добавили к менюшке раздел quit
-    file->Append(wxID_EXIT, wxT("&Quit"));
-    file->Append(ID_BUTTON, wxT("&New"));
-// закинули менюшку на полоску
-    menubar->Append(file, wxT("&File"));
- // установили полоску в окно
-    SetMenuBar(menubar);
-// подключили кнопку закрытия к событиям
-    Connect(wxID_EXIT,wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(AddE::OnQuit));
-// подключили менюшку
-  Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnQuit));
+	bt= new wxButton(m_pan,wxID_EXIT,wxT("Quit"),wxPoint(10,10));
+	ng= new wxButton(m_pan,ID_BUTTON,wxT("New"),wxPoint(100,10));
+	dp=new DrawPanel(m_pan, sb);
 
-// подключили кнопку смены 
-  Connect(ID_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AddE::OnNew));
-  Connect(ID_BUTTON, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnNew));
+	menubar = new wxMenuBar;
+	file = new wxMenu;
+	file->Append(wxID_EXIT, wxT("&Quit"));
+	file->Append(ID_BUTTON, wxT("&New"));
+	menubar->Append(file, wxT("&File"));
+	SetMenuBar(menubar);
+	Connect(wxID_EXIT,wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(AddE::OnQuit));
 
-// текст вывели
-      ss<<wxT("QQQ!");
- // создали статус-бар
-     sb=CreateStatusBar();
-    sb->SetStatusText(ss);
+	Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnQuit));
+	Connect(ID_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AddE::OnNew));
+	Connect(ID_BUTTON, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnNew));
+
+	
 };
 
 void AddE::OnQuit(wxCommandEvent& event){
@@ -165,15 +158,15 @@ void AddE::OnQuit(wxCommandEvent& event){
 
 void AddE::OnNew(wxCommandEvent& event){
 	delete dp;
-	dp=new DrawPanel(m_pan);
+	dp=new DrawPanel(m_pan, sb);
 };
 
-DrawPanel::DrawPanel(wxPanel *parent):wxPanel(parent, -1,wxPoint(50,100),wxSize(280,160),wxBORDER_SUNKEN){
+DrawPanel::DrawPanel(wxPanel *parent, wxStatusBar *sb):wxPanel(parent, -1,wxPoint(50,100),wxSize(280,160),wxBORDER_SUNKEN){
 	// подключили панель к событиям рисования
 	Connect(wxEVT_PAINT,wxPaintEventHandler(DrawPanel::OnPaint));
 	Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(DrawPanel::OnDclick));
 	
-
+	dpsb = sb;
 	pl = check20();
 };
 
@@ -202,6 +195,15 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 			dc.SetPen(wxPen(wxColour(0,0,0), 2));
 			dc.DrawCircle(pl.pos[i].x + e, pl.pos[i].y + e, rad);
 		}
+	wxString ss;
+
+	if(pl.turn == WHITE)
+		ss<<wxT("Ход белых..");
+	else
+		ss<<wxT("Ход чёрных..");
+
+	dpsb->SetStatusText(ss);
+
 };
 
 void DrawPanel::OnDclick(wxMouseEvent& event){      
