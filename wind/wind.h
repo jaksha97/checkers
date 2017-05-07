@@ -3,11 +3,9 @@
 #include <wx/valgen.h>
 
 struct Step{
-	public:
 	int green;	//**************************
 	int who;
-	int where;
-	int dead;	//***************************
+	int dead[4];	//***************************
 	
 };
 
@@ -15,24 +13,39 @@ class check20{
 public:
 	int a[20];  // указатель на область памяти  для игрового поля
 	wxPoint pos[20];
-	Step next[2];	
+	Step go[2];	
+	int turn;
+
 	check20();
 	int getNum(wxPoint);
 	void stepClear();
 	void stepPrep(int);
 	bool ingreen(int);
 	void act(int);	
+	
+	class Iter{
+		int* arr;
+		int idx;
+
+		public:
+
+		Iter(int*);
+		Iter* operator=(int);
+		Iter* operator++(int);
+		int operator[](int);
+		int operator*();
+	};
 };
 
 // Класс, описывающий панель для рисования
 class DrawPanel: public wxPanel{
   public:	
 // в конструкторе указывается адрес объекта, который ее содержит
+
         DrawPanel(wxPanel *parent);
  // рисовалка
         void OnPaint(wxPaintEvent & event);
 // составляющие цвета
-        int cx,cy,cz;
 	void OnDclick(wxMouseEvent& event); ///////////////////////////////////////////////
 	check20 pl;
 };
