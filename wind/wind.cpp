@@ -39,41 +39,55 @@ void check20::stepClear(){
 		for(int j = 0; j < 4; j++)		
 			go[i].dead[j] = -1;
 	}
-}
+};
+
+
+bool check20::kill_opp(){
+	Iter t(a);
+	
+	for(int i = 0; i < 20; i++)
+		if( a[t[i]] == turn && 
+		(a[t[i-1]] == -turn || a[t[i+1]] == -turn))
+			return true;
+	return false;
+			
+};
+
 
 void check20::stepPrep(int i){
 	stepClear();
 	Iter t(a);
 	
-	int j = i, k = 0;
-	while(a[t[j-2]] == FREE && a[t[i]] * a[t[j-1]] == -1){
-		go[0].who = i;		
-		go[0].green = t[j-2];
-		go[0].dead[k] = t[j-1];
-		k++;
-		j = t[j-2];
-	};
+	if(kill_opp()) {	
+		int j = i, k = 0;
+		while(a[t[j-2]] == FREE && a[t[i]] * a[t[j-1]] == -1){
+			go[0].who = i;		
+			go[0].green = t[j-2];
+			go[0].dead[k] = t[j-1];
+			k++;
+			j = t[j-2];
+		};
 
-	j = i; k = 0;
-	while(a[t[j+2]] == FREE && a[t[i]] * a[t[j+1]] == -1){
-		go[1].who = i;		
-		go[1].green = t[j+2];
-		go[1].dead[k] = t[j+1];
-		k++;
-		j = t[j+2];
-	};
+		j = i; k = 0;
+		while(a[t[j+2]] == FREE && a[t[i]] * a[t[j+1]] == -1){
+			go[1].who = i;		
+			go[1].green = t[j+2];
+			go[1].dead[k] = t[j+1];
+			k++;
+			j = t[j+2];
+		};
+	} else {
 	
-	
-	if(a[t[i-1]] == FREE && go[1].dead[0] == -1){
-		go[0].who = i;		
-		go[0].green = t[i-1];
+		if(a[t[i-1]] == FREE && go[1].dead[0] == -1){
+			go[0].who = i;		
+			go[0].green = t[i-1];
+		} 
+		
+		if(a[t[i+1]] == FREE && go[0].dead[0] == -1){
+			go[1].who = i;		
+			go[1].green = t[i+1];
+		}
 	}
-	
-	if(a[t[i+1]] == FREE && go[0].dead[0] == -1){
-		go[1].who = i;		
-		go[1].green = t[i+1];
-	}
-
 };
 
 bool check20::ingreen(int i){
@@ -199,6 +213,7 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 void DrawPanel::OnDclick(wxMouseEvent& event){      
 	wxClientDC dc(this);
 	dc.SetBrush(wxBrush(wxColour(0,255,0)));        
+
 	int num = pl.getNum(event.GetPosition());
 	if(num != -1 && pl.a[num] != 0 && pl.a[num] == pl.turn && !(pl.ingreen(num)))
 		pl.stepPrep(num);
@@ -206,6 +221,7 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 		pl.act(num);
 	else 
 		pl.stepClear();
+
 	this->Refresh();
 };
 
@@ -228,9 +244,6 @@ int check20::Iter::operator[](int i){
 	return (i + 20) % 20;
 };
 
-int check20::Iter::operator*(){
-	return arr[idx];
-};
 
 ////////////////////////////////////////////////
 

@@ -28,8 +28,10 @@ public:
 	void stepClear();
 	void stepPrep(int);
 	bool ingreen(int);
+	bool kill_opp();
 	void act(int);	
 	
+
 	class Iter{
 		int* arr;
 		int idx;
@@ -40,7 +42,6 @@ public:
 		Iter* operator=(int);
 		Iter* operator++(int);
 		int operator[](int);
-		int operator*();
 	};
 };
 
