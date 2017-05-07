@@ -100,12 +100,16 @@ void check20::act(int i){
 				a[go[1].dead[j]] = FREE;	
 	}
 
-	if(turn == WHITE){
+
+	if(turn == WHITE)
 		turn = BLACK;
-	} else	{
-		turn = WHITE;
-	}	
-	stepClear();	
+	else 
+		turn = WHITE;	
+	
+
+	//m_SocketClient
+	stepClear();
+
 };
 
 const int ID_DRAW =1001;
@@ -113,11 +117,18 @@ const int ID_BUTTON =1002;
 
 //constructor AddE
 AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,wxSize(500,400)){
+
+
+	ss<<wxT("QQQ!");
+	sb=CreateStatusBar();
+	sb->SetStatusText(ss);
+
 	m_pan= new wxPanel(this,wxID_ANY);
+
 	bt= new wxButton(m_pan,wxID_EXIT,wxT("Quit"),wxPoint(10,10));
 	ng= new wxButton(m_pan,ID_BUTTON,wxT("New"),wxPoint(100,10));
-	dp=new DrawPanel(m_pan);
-	
+	dp=new DrawPanel(m_pan, sb);
+
 	menubar = new wxMenuBar;
 	file = new wxMenu;
 	file->Append(wxID_EXIT, wxT("&Quit"));
@@ -125,13 +136,10 @@ AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,
 	menubar->Append(file, wxT("&File"));
 	SetMenuBar(menubar);
 	Connect(wxID_EXIT,wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(AddE::OnQuit));
+
 	Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnQuit));
 	Connect(ID_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AddE::OnNew));
 	Connect(ID_BUTTON, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnNew));
-	
-	ss<<wxT("Ход белых");
-	sb=CreateStatusBar();
-	sb->SetStatusText(ss);
 };
 
 void AddE::OnQuit(wxCommandEvent& event){
@@ -140,14 +148,15 @@ void AddE::OnQuit(wxCommandEvent& event){
 
 void AddE::OnNew(wxCommandEvent& event){
 	delete dp;
-	dp=new DrawPanel(m_pan);
+	dp=new DrawPanel(m_pan, sb);
 };
 
-DrawPanel::DrawPanel(wxPanel *parent):wxPanel(parent, -1,wxPoint(50,100),wxSize(280,160),wxBORDER_SUNKEN){
+DrawPanel::DrawPanel(wxPanel *parent, wxStatusBar *sb):wxPanel(parent, -1,wxPoint(50,100),wxSize(280,160),wxBORDER_SUNKEN){
 	// подключили панель к событиям рисования
 	Connect(wxEVT_PAINT,wxPaintEventHandler(DrawPanel::OnPaint));
 	Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(DrawPanel::OnDclick));
-
+	
+	dpsb = sb;
 	pl = check20();
 };
 
@@ -176,6 +185,15 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 			dc.SetPen(wxPen(wxColour(0,0,0), 2));
 			dc.DrawCircle(pl.pos[i].x + e, pl.pos[i].y + e, rad);
 		}
+	wxString ss;
+
+	if(pl.turn == WHITE)
+		ss<<wxT("Ход белых..");
+	else
+		ss<<wxT("Ход чёрных..");
+
+	dpsb->SetStatusText(ss);
+
 };
 
 void DrawPanel::OnDclick(wxMouseEvent& event){      
