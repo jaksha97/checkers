@@ -1,12 +1,6 @@
 #include "wind.h"
 
-const int e = 15;
-const int BLACK = -1;
-const int WHITE = 1;
-const int FREE = 0;			//************************
-const int rad = 12;
-
-//////////check20///////////////
+// constructor check20()
 check20::check20(){
 	for(int i = 0; i < 20; i++)
 		a[i] = FREE;
@@ -23,7 +17,7 @@ check20::check20(){
 		pos[10 + i] = wxPoint(230 - i * 30,110);
 	pos[18] = wxPoint(20,80);
 	pos[19] = wxPoint(20,50);
- 
+	 
 	turn = WHITE;	
 
 	stepClear();
@@ -108,59 +102,40 @@ void check20::act(int i){
 
 	if(turn == WHITE){
 		turn = BLACK;
-	} else
-		turn = WHITE;	
-	//m_SocketClient
-	stepClear();
+	} else	{
+		turn = WHITE;
+	}	
+	stepClear();	
 };
-////////////////////////////
 
 const int ID_DRAW =1001;
 const int ID_BUTTON =1002;
 
 //constructor AddE
 AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,wxSize(500,400)){
-// создание панельки для кнопок и рисовалки
-    m_pan= new wxPanel(this,wxID_ANY);
-// прицепили на эту панельку первую кнопку
-    bt= new wxButton(m_pan,wxID_EXIT,wxT("Quit"),wxPoint(10,10));
-    ng= new wxButton(m_pan,ID_BUTTON,wxT("New"),wxPoint(100,10));
-// прицепили вторую кнопку
-//    bp= new wxButton(m_pan,ID_BUTTON , wxT("Red"), wxPoint(100, 10));
-
-// прицепили панельку для рисования
-    dp=new DrawPanel(m_pan);
-
-// создали полоску для менюшки
-    menubar = new wxMenuBar;
-
-// создали менюшку
-    file = new wxMenu;
-// добавили к менюшке раздел quit
-    file->Append(wxID_EXIT, wxT("&Quit"));
-    file->Append(ID_BUTTON, wxT("&New"));
-// закинули менюшку на полоску
-    menubar->Append(file, wxT("&File"));
- // установили полоску в окно
-    SetMenuBar(menubar);
-// подключили кнопку закрытия к событиям
-    Connect(wxID_EXIT,wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(AddE::OnQuit));
-// подключили менюшку
-  Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnQuit));
-
-// подключили кнопку смены 
-  Connect(ID_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AddE::OnNew));
-  Connect(ID_BUTTON, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnNew));
-
-// текст вывели
-      ss<<wxT("QQQ!");
- // создали статус-бар
-     sb=CreateStatusBar();
-    sb->SetStatusText(ss);
+	m_pan= new wxPanel(this,wxID_ANY);
+	bt= new wxButton(m_pan,wxID_EXIT,wxT("Quit"),wxPoint(10,10));
+	ng= new wxButton(m_pan,ID_BUTTON,wxT("New"),wxPoint(100,10));
+	dp=new DrawPanel(m_pan);
+	
+	menubar = new wxMenuBar;
+	file = new wxMenu;
+	file->Append(wxID_EXIT, wxT("&Quit"));
+	file->Append(ID_BUTTON, wxT("&New"));
+	menubar->Append(file, wxT("&File"));
+	SetMenuBar(menubar);
+	Connect(wxID_EXIT,wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(AddE::OnQuit));
+	Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnQuit));
+	Connect(ID_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AddE::OnNew));
+	Connect(ID_BUTTON, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnNew));
+	
+	ss<<wxT("Ход белых");
+	sb=CreateStatusBar();
+	sb->SetStatusText(ss);
 };
 
 void AddE::OnQuit(wxCommandEvent& event){
-  Close(true);
+	Close(true);
 };
 
 void AddE::OnNew(wxCommandEvent& event){
@@ -172,7 +147,6 @@ DrawPanel::DrawPanel(wxPanel *parent):wxPanel(parent, -1,wxPoint(50,100),wxSize(
 	// подключили панель к событиям рисования
 	Connect(wxEVT_PAINT,wxPaintEventHandler(DrawPanel::OnPaint));
 	Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(DrawPanel::OnDclick));
-	
 
 	pl = check20();
 };
@@ -207,7 +181,6 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 void DrawPanel::OnDclick(wxMouseEvent& event){      
 	wxClientDC dc(this);
 	dc.SetBrush(wxBrush(wxColour(0,255,0)));        
-//	if(event.GetPosition()
 	int num = pl.getNum(event.GetPosition());
 	if(num != -1 && pl.a[num] != 0 && pl.a[num] == pl.turn && !(pl.ingreen(num)))
 		pl.stepPrep(num);
@@ -215,10 +188,6 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 		pl.act(num);
 	else 
 		pl.stepClear();
-	//if(num != -1)
-	//	dc.DrawRectangle(pl.pos[num], wxSize(30,30));
-//	sleep(1);	
-//
 	this->Refresh();
 };
 
