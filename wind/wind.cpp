@@ -1,16 +1,19 @@
 #include "wind.h"
 
-int e = 15;			//************************
-int rad = 12;
+const int e = 15;
+const int BLACK = -1;
+const int WHITE = 1;
+const int FREE = 0;			//************************
+const int rad = 12;
 
 //////////check20///////////////
 check20::check20(){
 	for(int i = 0; i < 20; i++)
-		a[i]=0;
+		a[i] = FREE;
 	for(int i = 2; i < 6; i++)
-		a[i]=1;
+		a[i] = WHITE;
 	for(int i = 12; i < 16; i++)
-		a[i]=-1;
+		a[i] = BLACK;
 
 	for(int i = 0; i < 8; i++)
 		pos[i] = wxPoint(20 + 30 * i,20);
@@ -21,13 +24,15 @@ check20::check20(){
 	pos[18] = wxPoint(20,80);
 	pos[19] = wxPoint(20,50);
  
+	turn = WHITE;	
+
 	stepClear();
 };
 
 int check20::getNum(wxPoint t){
 	for(int i = 0; i < 20; i++)
-		if(pos[i].x < t.x && t.x < pos[i].x + 2*e
-		&& pos[i].y < t.y && t.y < pos[i].y + 2*e)
+		if(pos[i].x < t.x && t.x < pos[i].x + 2 * e
+		&& pos[i].y < t.y && t.y < pos[i].y + 2 * e)
 			return i;
 	return -1;
 };
@@ -35,89 +40,76 @@ int check20::getNum(wxPoint t){
 
 void check20::stepClear(){
 	for(int i = 0; i < 2; i++){
-		next[i].who = -1;
-		next[i].green = -1;
-		next[i].where = -1;
-		next[i].dead = -1;
+		go[i].who = -1;
+		go[i].green = -1;
+		for(int j = 0; j < 4; j++)		
+			go[i].dead[j] = -1;
 	}
 }
 
 void check20::stepPrep(int i){
 	stepClear();
-	int next_i, prev_i;	
-
-	if(i == 0)	
-		prev_i = 19;
-	else 
-		prev_i = i - 1;
-
-	if(i == 19)
-		next_i = 0;
-	else 
-		next_i = i + 1;
-
-	if(a[prev_i] == 0){
-		next[0].who = i;		
-		next[0].green = prev_i;
-		next[0].where = prev_i;
-	}
+	Iter t(a);
 	
-	if(a[next_i] == 0){
-		next[1].who = i;		
-		next[1].green = next_i;
-		next[1].where = next_i;
-	}
-
-
-	int d_next_i, d_prev_i;	
-
-	if(prev_i == 0)	
-		d_prev_i = 19;
-	else 
-		d_prev_i = prev_i - 1;
-
-	if(next_i == 19)
-		d_next_i = 0;
-	else 
-		d_next_i = next_i + 1;
-	
-	if(a[d_prev_i] == 0 && a[i] * a[prev_i] == -1){
-		next[0].who = i;		
-		next[0].green = d_prev_i;
-		next[0].where = d_prev_i;
-		next[0].dead = prev_i;
+	int j = i, k = 0;
+	while(a[t[j-2]] == FREE && a[t[i]] * a[t[j-1]] == -1){
+		go[0].who = i;		
+		go[0].green = t[j-2];
+		go[0].dead[k] = t[j-1];
+		k++;
+		j = t[j-2];
 	};
 
-	if(a[d_next_i] == 0 && a[i] * a[next_i] == -1){
-		next[1].who = i;		
-		next[1].green = d_next_i;
-		next[1].where = d_next_i;
-		next[1].dead = next_i;
-	};		 
+	j = i; k = 0;
+	while(a[t[j+2]] == FREE && a[t[i]] * a[t[j+1]] == -1){
+		go[1].who = i;		
+		go[1].green = t[j+2];
+		go[1].dead[k] = t[j+1];
+		k++;
+		j = t[j+2];
+	};
+	
+	
+	if(a[t[i-1]] == FREE && go[1].dead[0] == -1){
+		go[0].who = i;		
+		go[0].green = t[i-1];
+	}
+	
+	if(a[t[i+1]] == FREE && go[0].dead[0] == -1){
+		go[1].who = i;		
+		go[1].green = t[i+1];
+	}
+
 };
 
 bool check20::ingreen(int i){
-	if(next[0].green == i || next[1].green == i)
+	if(go[0].green == i || go[1].green == i)
 		return 1;
 	else
 		return 0;
 
 };
 
+
 void check20::act(int i){
-	if(next[0].green == i){
-		a[next[0].where] = a[next[0].who];
-		a[next[0].who] = 0;
-		if(next[0].dead != -1)
-			a[next[0].dead] = 0;
+	if(go[0].green == i){
+		a[go[0].green] = a[go[0].who];
+		a[go[0].who] = 0;
+		for(int j = 0; j < 4; j++)
+			if(go[0].dead[j] != -1)
+				a[go[0].dead[j]] = FREE;
+	} else if(go[1].green == i){
+		a[go[1].green] = a[go[1].who];
+		a[go[1].who] = 0;
+		for(int j = 0; j < 4; j++)
+			if(go[1].dead[j] != -1)
+				a[go[1].dead[j]] = FREE;	
 	}
-	
-	if(next[1].green == i){
-		a[next[1].where] = a[next[1].who];
-		a[next[1].who] = 0;
-		if(next[1].dead != -1)
-			a[next[1].dead] = 0;
-	}	
+
+	if(turn == WHITE){
+		turn = BLACK;
+	} else
+		turn = WHITE;	
 	//m_SocketClient
 	stepClear();
 };
@@ -181,10 +173,7 @@ DrawPanel::DrawPanel(wxPanel *parent):wxPanel(parent, -1,wxPoint(50,100),wxSize(
 	Connect(wxEVT_PAINT,wxPaintEventHandler(DrawPanel::OnPaint));
 	Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(DrawPanel::OnDclick));
 	
-	int z=0;
-	cx=255;
-	cy=255;
-	cz=255;
+
 	pl = check20();
 };
 
@@ -197,8 +186,8 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 	
 	dc.SetBrush(wxBrush(wxColour(0,255,0)));
 	for(int i = 0; i < 2; i++)
-		if(pl.next[i].green != -1)
-			dc.DrawRectangle(pl.pos[pl.next[i].green], wxSize(30,30));
+		if(pl.go[i].green != -1)
+			dc.DrawRectangle(pl.pos[pl.go[i].green], wxSize(30,30));
 
 	dc.SetBrush(wxBrush(wxColour(255,255,255)));
 	for(int i = 0; i < 20; i++)
@@ -220,7 +209,7 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 	dc.SetBrush(wxBrush(wxColour(0,255,0)));        
 //	if(event.GetPosition()
 	int num = pl.getNum(event.GetPosition());
-	if(num != -1 && pl.a[num] != 0 && !(pl.ingreen(num)))
+	if(num != -1 && pl.a[num] != 0 && pl.a[num] == pl.turn && !(pl.ingreen(num)))
 		pl.stepPrep(num);
 	else if(num != -1 && pl.ingreen(num))
 		pl.act(num);
@@ -232,6 +221,31 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 //
 	this->Refresh();
 };
+
+///////////////// Iter /////////////////
+
+check20::Iter::Iter(int* a){
+	idx = 0;
+	arr = a;	
+};
+
+check20::Iter* check20::Iter::operator=(int i){
+	idx = (i + 20) % 20;
+};
+
+check20::Iter* check20::Iter::operator++(int){
+	idx = (idx + 1) % 20;
+};
+
+int check20::Iter::operator[](int i){		
+	return (i + 20) % 20;
+};
+
+int check20::Iter::operator*(){
+	return arr[idx];
+};
+
+////////////////////////////////////////////////
 
 IMPLEMENT_APP(Pril);
 
