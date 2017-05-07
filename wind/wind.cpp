@@ -1,12 +1,6 @@
 #include "wind.h"
 
-const int e = 15;
-const int BLACK = -1;
-const int WHITE = 1;
-const int FREE = 0;			//************************
-const int rad = 12;
-
-//////////check20///////////////
+// constructor check20()
 check20::check20(){
 	for(int i = 0; i < 20; i++)
 		a[i] = FREE;
@@ -23,7 +17,7 @@ check20::check20(){
 		pos[10 + i] = wxPoint(230 - i * 30,110);
 	pos[18] = wxPoint(20,80);
 	pos[19] = wxPoint(20,50);
- 
+	 
 	turn = WHITE;	
 
 	stepClear();
@@ -116,16 +110,14 @@ void check20::act(int i){
 	//m_SocketClient
 	stepClear();
 
-
-
 };
-////////////////////////////
 
 const int ID_DRAW =1001;
 const int ID_BUTTON =1002;
 
 //constructor AddE
 AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,wxSize(500,400)){
+
 
 	ss<<wxT("QQQ!");
 	sb=CreateStatusBar();
@@ -148,12 +140,10 @@ AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,
 	Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnQuit));
 	Connect(ID_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AddE::OnNew));
 	Connect(ID_BUTTON, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnNew));
-
-	
 };
 
 void AddE::OnQuit(wxCommandEvent& event){
-  Close(true);
+	Close(true);
 };
 
 void AddE::OnNew(wxCommandEvent& event){
@@ -209,7 +199,6 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 void DrawPanel::OnDclick(wxMouseEvent& event){      
 	wxClientDC dc(this);
 	dc.SetBrush(wxBrush(wxColour(0,255,0)));        
-//	if(event.GetPosition()
 	int num = pl.getNum(event.GetPosition());
 	if(num != -1 && pl.a[num] != 0 && pl.a[num] == pl.turn && !(pl.ingreen(num)))
 		pl.stepPrep(num);
@@ -217,10 +206,6 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 		pl.act(num);
 	else 
 		pl.stepClear();
-	//if(num != -1)
-	//	dc.DrawRectangle(pl.pos[num], wxSize(30,30));
-//	sleep(1);	
-//
 	this->Refresh();
 };
 
