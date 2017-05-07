@@ -1,12 +1,6 @@
 #include "wind.h"
 
-const int e = 15;
-const int BLACK = -1;
-const int WHITE = 1;
-const int FREE = 0;			//************************
-const int rad = 12;
-
-//////////check20///////////////
+// constructor check20()
 check20::check20(){
 	for(int i = 0; i < 20; i++)
 		a[i] = FREE;
@@ -23,7 +17,7 @@ check20::check20(){
 		pos[10 + i] = wxPoint(230 - i * 30,110);
 	pos[18] = wxPoint(20,80);
 	pos[19] = wxPoint(20,50);
- 
+	 
 	turn = WHITE;	
 
 	stepClear();
@@ -45,44 +39,55 @@ void check20::stepClear(){
 		for(int j = 0; j < 4; j++)		
 			go[i].dead[j] = -1;
 	}
-}
+};
+
+
+bool check20::kill_opp(){
+	Iter t(a);
+	
+	for(int i = 0; i < 20; i++)
+		if( a[t[i]] == turn && 
+		(a[t[i-1]] == -turn || a[t[i+1]] == -turn))
+			return true;
+	return false;
+			
+};
 
 
 void check20::stepPrep(int i){
 	stepClear();
 	Iter t(a);
 	
-	
+	if(kill_opp()) {	
+		int j = i, k = 0;
+		while(a[t[j-2]] == FREE && a[t[i]] * a[t[j-1]] == -1){
+			go[0].who = i;		
+			go[0].green = t[j-2];
+			go[0].dead[k] = t[j-1];
+			k++;
+			j = t[j-2];
+		};
 
-	int j = i, k = 0;
-	while(a[t[j-2]] == FREE && a[t[i]] * a[t[j-1]] == -1){
-		go[0].who = i;		
-		go[0].green = t[j-2];
-		go[0].dead[k] = t[j-1];
-		k++;
-		j = t[j-2];
-	};
-
-	j = i; k = 0;
-	while(a[t[j+2]] == FREE && a[t[i]] * a[t[j+1]] == -1){
-		go[1].who = i;		
-		go[1].green = t[j+2];
-		go[1].dead[k] = t[j+1];
-		k++;
-		j = t[j+2];
-	};
+		j = i; k = 0;
+		while(a[t[j+2]] == FREE && a[t[i]] * a[t[j+1]] == -1){
+			go[1].who = i;		
+			go[1].green = t[j+2];
+			go[1].dead[k] = t[j+1];
+			k++;
+			j = t[j+2];
+		};
+	} else {
 	
-	
-	if(a[t[i-1]] == FREE && go[1].dead[0] == -1){
-		go[0].who = i;		
-		go[0].green = t[i-1];
+		if(a[t[i-1]] == FREE && go[1].dead[0] == -1){
+			go[0].who = i;		
+			go[0].green = t[i-1];
+		} 
+		
+		if(a[t[i+1]] == FREE && go[0].dead[0] == -1){
+			go[1].who = i;		
+			go[1].green = t[i+1];
+		}
 	}
-	
-	if(a[t[i+1]] == FREE && go[0].dead[0] == -1){
-		go[1].who = i;		
-		go[1].green = t[i+1];
-	}
-
 };
 
 bool check20::ingreen(int i){
@@ -119,16 +124,14 @@ void check20::act(int i){
 	//m_SocketClient
 	stepClear();
 
-
-
 };
-////////////////////////////
 
 const int ID_DRAW =1001;
 const int ID_BUTTON =1002;
 
 //constructor AddE
 AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,wxSize(500,400)){
+
 
 	ss<<wxT("QQQ!");
 	sb=CreateStatusBar();
@@ -151,12 +154,10 @@ AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,
 	Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnQuit));
 	Connect(ID_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AddE::OnNew));
 	Connect(ID_BUTTON, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnNew));
-
-	
 };
 
 void AddE::OnQuit(wxCommandEvent& event){
-  Close(true);
+	Close(true);
 };
 
 void AddE::OnNew(wxCommandEvent& event){
@@ -243,9 +244,6 @@ int check20::Iter::operator[](int i){
 	return (i + 20) % 20;
 };
 
-int check20::Iter::operator*(){
-	return arr[idx];
-};
 
 ////////////////////////////////////////////////
 

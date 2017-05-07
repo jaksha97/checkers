@@ -1,6 +1,13 @@
 #include <wx/wx.h>
 #include <wx/socket.h>
 #include <wx/valgen.h>
+#include <wx/statusbr.h>
+
+#define e 15
+#define BLACK -1
+#define WHITE 1
+#define FREE 0			//************************
+#define rad 12
 
 struct Step{
 	int green;	
@@ -21,8 +28,10 @@ public:
 	void stepClear();
 	void stepPrep(int);
 	bool ingreen(int);
+	bool kill_opp();
 	void act(int);	
 	
+
 	class Iter{
 		int* arr;
 		int idx;
@@ -33,7 +42,6 @@ public:
 		Iter* operator=(int);
 		Iter* operator++(int);
 		int operator[](int);
-		int operator*();
 	};
 };
 
@@ -54,21 +62,17 @@ class DrawPanel: public wxPanel{
 // Фрайм  который содержит панель, на которой две кнопки,
 // и панель для рисования
 class AddE: public wxFrame{
- public:
-    AddE(const wxString& title);
-    wxPanel *m_pan; 		// панель для кнопок и планшета
-    wxButton *bt, *ng; 		//, *bp; // кнопки смены цвета и закрытия
-    DrawPanel *dp; 		 // панель для рисования
-    wxMenuBar *menubar; 	// полоска для меню
-    wxMenu *file; 		// менюшка  на полоске
-    wxStatusBar *sb;		 // статус бар
-    wxString ss;
-    
-// Функция закрытия окна
-    void OnQuit(wxCommandEvent& event);
-    void OnNew(wxCommandEvent& event);
-// Функция изменения цвета
-//    void CangeColor(wxCommandEvent& event);
+public:
+	AddE(const wxString& title);
+	wxPanel *m_pan; 		// панель для кнопок и планшета
+	wxButton *bt, *ng; 		//, *bp; // кнопки смены цвета и закрытия
+	DrawPanel *dp; 		 // панель для рисования
+	wxMenuBar *menubar; 	// полоска для меню
+	wxMenu *file; 		// менюшка  на полоске
+	wxStatusBar *sb;		 // статус бар
+	wxString ss;
+	void OnQuit(wxCommandEvent& event);
+	void OnNew(wxCommandEvent& event);
 };
 
 class Pril: public wxApp{
