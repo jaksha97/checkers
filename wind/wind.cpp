@@ -47,10 +47,13 @@ void check20::stepClear(){
 	}
 }
 
+
 void check20::stepPrep(int i){
 	stepClear();
 	Iter t(a);
 	
+	
+
 	int j = i, k = 0;
 	while(a[t[j-2]] == FREE && a[t[i]] * a[t[j-1]] == -1){
 		go[0].who = i;		
@@ -209,7 +212,7 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 void DrawPanel::OnDclick(wxMouseEvent& event){      
 	wxClientDC dc(this);
 	dc.SetBrush(wxBrush(wxColour(0,255,0)));        
-//	if(event.GetPosition()
+
 	int num = pl.getNum(event.GetPosition());
 	if(num != -1 && pl.a[num] != 0 && pl.a[num] == pl.turn && !(pl.ingreen(num)))
 		pl.stepPrep(num);
@@ -217,10 +220,7 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 		pl.act(num);
 	else 
 		pl.stepClear();
-	//if(num != -1)
-	//	dc.DrawRectangle(pl.pos[num], wxSize(30,30));
-//	sleep(1);	
-//
+
 	this->Refresh();
 };
 
