@@ -442,7 +442,7 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 			pl.stepClear();
 	}
 
-
+		
 	this->Refresh();
 	
 };
