@@ -53,6 +53,22 @@ bool check20::kill_opp(){
 			
 };
 
+int check20::win_check(){
+	int white_num = 0, black_num = 0;
+	for(int i = 0; i < 20; i++)
+		if(a[i] == 1)
+			white_num++;
+		else if(a[i] == -1)
+			black_num++;
+
+	if(black_num == 0 || white_num == 0)
+		return 1;
+	else if(black_num == 1 && white_num == 1)
+		return -1;
+	else
+		return 0;
+	
+};
 
 void check20::stepPrep(int i){
 	stepClear();
@@ -113,7 +129,6 @@ void check20::act(int i){
 			if(go[1].dead[j] != -1)
 				a[go[1].dead[j]] = FREE;	
 	}
-
 
 	if(turn == WHITE)
 		turn = BLACK;
@@ -311,6 +326,7 @@ DrawPanel::DrawPanel(wxPanel *parent, wxStatusBar *sb, wxSocketClient *sc):wxPan
 };
 
 void DrawPanel::OnPaint(wxPaintEvent& event){
+			
 	wxPaintDC dc(this);
 	dc.SetBrush(wxBrush(wxColour(255,255,255)));
 	dc.SetPen(wxPen(wxColour(0,0,0), 1));
@@ -344,6 +360,8 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 
 	dpsb->SetStatusText(ss);
 
+	
+
 };
 
 void DrawPanel::OnDclick(wxMouseEvent& event){      
@@ -371,6 +389,8 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 		pl.stepClear();
 
 	this->Refresh();
+	if(pl.win_check())
+		wxMessageBox(wxT("Кто-то победил"), wxT("Такие дела"));
 };
 
 ///////////////// Iter /////////////////

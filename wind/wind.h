@@ -29,8 +29,10 @@ public:
 	void stepPrep(int);
 	bool ingreen(int);
 	bool kill_opp();
+	int win_check();
 	void act(int);	
 	
+
 
 	class Iter{
 		int* arr;
