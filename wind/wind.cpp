@@ -433,7 +433,7 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 	    		m_sc->Write(pl.a, 20*sizeof(int));
 		} else 
 			pl.stepClear();
-	} else {
+	} else if(m_sc == NULL) {
 		if(in_checker && pl.a[num] == pl.turn)
 			pl.stepPrep(num);
 		else if(in_green) 
@@ -442,7 +442,7 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 			pl.stepClear();
 	}
 
-		
+
 	this->Refresh();
 	
 };
