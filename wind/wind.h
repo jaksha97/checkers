@@ -49,30 +49,45 @@ class DrawPanel: public wxPanel{
   public:	
 // в конструкторе указывается адрес объекта, который ее содержит
 
-        DrawPanel(wxPanel *parent, wxStatusBar *sb);
+        DrawPanel(wxPanel *parent, wxStatusBar *sb, wxSocketClient *sc);
  // рисовалка
         void OnPaint(wxPaintEvent & event);
 // составляющие цвета
 	void OnDclick(wxMouseEvent& event); ///////////////////////////////////////////////
 	check20 pl;
 	wxStatusBar *dpsb;
+	wxSocketClient *m_sc;
 };
 
 // Фрайм  который содержит панель, на которой две кнопки,
 // и панель для рисования
-class AddE: public wxFrame{
+class AddE: public wxFrame{   
+	// Это наш клиентский сокет 
+	wxSocketClient * m_SocketClient;
 public:
 	AddE(const wxString& title);
+	~AddE(); 
+	DECLARE_EVENT_TABLE()    
+	
 	wxPanel *m_pan; 		// панель для кнопок и планшета
 	wxButton *bt, *ng; 		//, *bp; // кнопки смены цвета и закрытия
 	DrawPanel *dp; 		 // панель для рисования
+	
 	wxMenuBar *menubar; 	// полоска для меню
 	wxMenu *file; 		// менюшка  на полоске
 	wxStatusBar *sb;		 // статус бар
 	wxString ss;
 	void OnQuit(wxCommandEvent& event);
 	void OnNew(wxCommandEvent& event);
+	
+	// Обработчик событий от сокета
+    void OnClientSocketEvent(wxSocketEvent & event);
+    // Обработчик кнопки КОННЕКТ
+    void OnConnect(wxCommandEvent & event);
+    // Обработчик кнопки ДИСКОННЕКТ
+    void OnDisconnect(wxCommandEvent & event);
 };
+
 
 class Pril: public wxApp{
     public:
