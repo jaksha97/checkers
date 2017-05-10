@@ -405,27 +405,32 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 	dc.SetBrush(wxBrush(wxColour(0,255,0)));        
 
 	int num = pl.getNum(event.GetPosition());
-	if(num != -1 && pl.a[num] != 0 && pl.a[num] == pl.turn && !(pl.ingreen(num)))
-		pl.stepPrep(num);
-	else if(num != -1 && pl.ingreen(num)){
-		pl.act(num);
-		
-		if(m_sc){
+	bool in_checker = num != -1 && pl.a[num] != 0 && pl.a[num] == pl.turn && !(pl.ingreen(num));
+	bool in_green = num != -1 && pl.ingreen(num);
+
+	if(m_sc && pl.ready){
+		if(in_checker && pl.a[num] == pl.turn && pl.turn == pl.my_color)
+			pl.stepPrep(num);
+		else if(in_green) {
+			pl.act(num);
 	    		// Отослать сообщение
 	    		wxString m_ss;
 	    		m_ss<<wxT("Отправлено..");
-		        dpsb->SetStatusText(m_ss);
-	    		
+			dpsb->SetStatusText(m_ss);
 	    		m_sc->Write(pl.a, 20*sizeof(int));
-		}
+		} else 
+			pl.stepClear();
+	} else {
+		if(in_checker && pl.a[num] == pl.turn)
+			pl.stepPrep(num);
+		else if(in_green) 
+			pl.act(num);
+	    	else 
+			pl.stepClear();
+	}
 
-	} else 
-		pl.stepClear();
-
-	
+		
 	this->Refresh();
-	if(pl.win_check())	
-		wxMessageBox(wxT("Someone won!"), wxT("Tadam!!"));
 	
 };
 
