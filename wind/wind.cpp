@@ -359,7 +359,7 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 		ss<<wxT("Ход чёрных..");
 
 	dpsb->SetStatusText(ss);
-
+	
 	
 
 };
@@ -374,23 +374,23 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 	else if(num != -1 && pl.ingreen(num)){
 		pl.act(num);
 		
-		if(!m_sc) {
-			this->Refresh();
-			return ;
-		};
-    		// Отослать сообщение
-    		wxString m_ss;
-    		m_ss<<wxT("Отправлено..");
-                dpsb->SetStatusText(m_ss);
-    		
-    		m_sc->Write(pl.a, 20*sizeof(int));
+		if(m_sc){
+	    		// Отослать сообщение
+	    		wxString m_ss;
+	    		m_ss<<wxT("Отправлено..");
+		        dpsb->SetStatusText(m_ss);
+	    		
+	    		m_sc->Write(pl.a, 20*sizeof(int));
 		}
-	else 
+
+	} else 
 		pl.stepClear();
 
+	
 	this->Refresh();
-	if(pl.win_check())
-		wxMessageBox(wxT("Кто-то победил"), wxT("Такие дела"));
+	if(pl.win_check())	
+		wxMessageBox(wxT("Someone won!"), wxT("Tadam!!"));
+	
 };
 
 ///////////////// Iter /////////////////
