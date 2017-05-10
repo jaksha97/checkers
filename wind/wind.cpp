@@ -129,6 +129,19 @@ void check20::act(int i){
 const int ID_DRAW =1001;
 const int ID_BUTTON =1002;
 
+enum
+{
+    ID_CONNECT,
+    ID_DISCONNECT,
+    ID_SOCKET_CLIENT
+};
+
+BEGIN_EVENT_TABLE(AddE, wxFrame)
+	EVT_SOCKET(ID_SOCKET_CLIENT, AddE::OnClientSocketEvent)
+	EVT_BUTTON(ID_CONNECT, AddE::OnConnect)
+	EVT_BUTTON(ID_DISCONNECT, AddE::OnDisconnect)
+END_EVENT_TABLE()
+
 //constructor AddE
 AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,wxSize(500,400)){
 
@@ -141,7 +154,7 @@ AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,
 
 	bt= new wxButton(m_pan,wxID_EXIT,wxT("Quit"),wxPoint(10,10));
 	ng= new wxButton(m_pan,ID_BUTTON,wxT("New"),wxPoint(100,10));
-	dp=new DrawPanel(m_pan, sb);
+	dp=new DrawPanel(m_pan, sb, m_SocketClient);
 
 	menubar = new wxMenuBar;
 	file = new wxMenu;
@@ -154,7 +167,21 @@ AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,
 	Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnQuit));
 	Connect(ID_BUTTON, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(AddE::OnNew));
 	Connect(ID_BUTTON, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(AddE::OnNew));
+	
+	wxButton * connect_btn = new wxButton(m_pan, ID_CONNECT, wxT("Connect"), wxPoint(190,10));
+	    wxButton * disconnect_btn = new wxButton(m_pan, ID_DISCONNECT, wxT("Disonnect"),wxPoint(280,10));
+  
 };
+
+AddE::~AddE()
+{
+    // При удалении формы, закрываем наш сокет
+    if(m_SocketClient)
+    {
+        m_SocketClient->Destroy();
+    }
+}
+
 
 void AddE::OnQuit(wxCommandEvent& event){
 	Close(true);
@@ -162,15 +189,124 @@ void AddE::OnQuit(wxCommandEvent& event){
 
 void AddE::OnNew(wxCommandEvent& event){
 	delete dp;
-	dp=new DrawPanel(m_pan, sb);
+	dp=new DrawPanel(m_pan, sb, m_SocketClient);
 };
 
-DrawPanel::DrawPanel(wxPanel *parent, wxStatusBar *sb):wxPanel(parent, -1,wxPoint(50,100),wxSize(280,160),wxBORDER_SUNKEN){
+void AddE::OnConnect(wxCommandEvent & event)
+{
+    // Если мы вдруг нажали на кнопку КОННЕКТ когда соединение уже установлено, то выход (воoбще, такого не должно случиться...)
+    if(m_SocketClient) return;
+    // Показываем диаложек для ввода адреса (или хоста) сервера
+    wxString addr_str = wxGetTextFromUser(_("Введите адрес сервера:"), _("Соединение"), wxT("localhost"));
+    // Настраиваем адрес для подключения
+    wxIPV4address addr;
+    addr.Service(3000);
+    addr.Hostname(addr_str);
+    // Создаем сокет
+    m_SocketClient = new wxSocketClient;
+    // Привязываем его к нашей форме
+    m_SocketClient->SetEventHandler(*this, ID_SOCKET_CLIENT);
+    m_SocketClient->SetNotify(wxSOCKET_CONNECTION_FLAG|wxSOCKET_INPUT_FLAG|wxSOCKET_OUTPUT_FLAG);
+    m_SocketClient->Notify(TRUE);
+    dp->m_sc = m_SocketClient;
+    if(m_SocketClient)
+    {
+        // Пытаемся сконнектиться с сервером
+        m_SocketClient->Connect(addr, false);
+        // Ожидание соединения 10 сек.
+        m_SocketClient->WaitOnConnect(10);
+           dp->m_sc = m_SocketClient;
+        // Если соединение установлено...
+        wxString m_ss;
+        if(m_SocketClient->IsConnected())
+        {
+            // Говорим что все ОК
+          m_ss<<wxT("Соединение установлено..");
+       
+        }
+        else
+        {
+          m_ss<<wxT("Соединение не установлено..");
+        }
+        sb->SetStatusText(m_ss);
+    }
+};
+
+void AddE::OnDisconnect(wxCommandEvent & event)
+{
+    // При нажатии на кнопку ДИСКОННЕКТ прерываем соединение и удаляем сокет
+if(m_SocketClient)
+    {
+        if(m_SocketClient->IsConnected()) m_SocketClient->Close();
+        m_SocketClient->Destroy();
+    }
+    m_SocketClient = NULL;
+    wxString ms;
+    ms<<wxT("Соединение прервано..");
+    sb->SetStatusText(ms);
+};
+
+void AddE::OnClientSocketEvent(wxSocketEvent & event)
+{    
+	wxSocketBase *sock = event.GetSocket();
+	wxIPV4address addr;
+	int buffer[20];
+	wxString m_ss;
+    switch(event.GetSocketEvent())
+    {
+        // Если пришло сообщение
+        case wxSOCKET_INPUT:
+        {       
+            // Прочитали
+            sock->Read(buffer, 20*sizeof(int));
+            // Поругались, если ошибка
+            if(sock->Error())
+            {
+            	m_ss<<wxT("Ошибка чтения данных..");
+               sb->SetStatusText(m_ss);
+            }
+            else
+            {
+                //перерисуем
+                for(int i = 0; i < 20; i++){
+                	dp->pl.a[i] = buffer[i];
+                }
+                if(dp->pl.turn == WHITE)
+			dp->pl.turn = BLACK;
+		else 
+			dp->pl.turn = WHITE;	
+                m_ss<<wxT("Получено..");
+                sb->SetStatusText(m_ss);
+                dp->Refresh();
+            }
+            break;
+        }
+        case wxSOCKET_LOST:
+        {
+            // Если дисконнект
+            sock->GetLocal(addr);
+            // Обнулили наш сокет
+            if(sock == m_SocketClient)
+            {
+                m_SocketClient = NULL;
+            }
+            // Удалили
+            sock->Destroy();            
+            // Сказали что произошел дисконнект
+            wxString s1;
+            break;
+        }
+        default:;
+  }
+};
+
+DrawPanel::DrawPanel(wxPanel *parent, wxStatusBar *sb, wxSocketClient *sc):wxPanel(parent, -1,wxPoint(50,100),wxSize(280,160),wxBORDER_SUNKEN){
 	// подключили панель к событиям рисования
 	Connect(wxEVT_PAINT,wxPaintEventHandler(DrawPanel::OnPaint));
 	Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(DrawPanel::OnDclick));
 	
 	dpsb = sb;
+	m_sc = sc;
 	pl = check20();
 };
 
@@ -217,8 +353,20 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 	int num = pl.getNum(event.GetPosition());
 	if(num != -1 && pl.a[num] != 0 && pl.a[num] == pl.turn && !(pl.ingreen(num)))
 		pl.stepPrep(num);
-	else if(num != -1 && pl.ingreen(num))
+	else if(num != -1 && pl.ingreen(num)){
 		pl.act(num);
+		
+		if(!m_sc) {
+			this->Refresh();
+			return ;
+		};
+    		// Отослать сообщение
+    		wxString m_ss;
+    		m_ss<<wxT("Отправлено..");
+                dpsb->SetStatusText(m_ss);
+    		
+    		m_sc->Write(pl.a, 20*sizeof(int));
+		}
 	else 
 		pl.stepClear();
 
