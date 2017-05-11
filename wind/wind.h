@@ -22,6 +22,8 @@ public:
 	wxPoint pos[20];
 	Step go[2];	
 	int turn;
+	int my_color;
+	int ready;
 
 	check20();
 	int getNum(wxPoint);

@@ -221,7 +221,7 @@ void AddE::OnConnect(wxCommandEvent & event)
     m_SocketClient = new wxSocketClient;
     // Привязываем его к нашей форме
     m_SocketClient->SetEventHandler(*this, ID_SOCKET_CLIENT);
-    m_SocketClient->SetNotify(wxSOCKET_CONNECTION_FLAG|wxSOCKET_INPUT_FLAG|wxSOCKET_OUTPUT_FLAG);
+    m_SocketClient->SetNotify(wxSOCKET_CONNECTION_FLAG|wxSOCKET_INPUT_FLAG|wxSOCKET_OUTPUT_FLAG|wxSOCKET_LOST_FLAG);
     m_SocketClient->Notify(TRUE);
     dp->m_sc = m_SocketClient;
     if(m_SocketClient)
@@ -272,6 +272,11 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
         // Если пришло сообщение
         case wxSOCKET_INPUT:
         {       
+        //buffer[0] == 101 - YOU ARE WHITE
+        //buffer[0] == 99 - YOU ARE BLACK
+        //buffer[0] == 2001 - YOU WIN
+        //buffer[0] == 1999 - YOU LOOSE
+        //buffer[0] == 69 - READY
             // Прочитали
             sock->Read(buffer, 20*sizeof(int));
             // Поругались, если ошибка
@@ -282,6 +287,36 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
             }
             else
             {
+            	switch(buffer[0])
+            	{
+            		case 101:
+            		{
+            			
+            			break;
+            		}
+            		case 99:
+            		{
+            			
+            			break;
+            		}
+            		case 2001:
+            		{
+            		
+            			break;
+            		}
+            		case 1999:
+            		{
+            		
+            			break;
+            		}
+            		case 69:
+            		{
+            		
+            			break;
+            		}
+            	}
+            	
+            	
                 //перерисуем
                 for(int i = 0; i < 20; i++){
                 	dp->pl.a[i] = buffer[i];
@@ -308,7 +343,8 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
             // Удалили
             sock->Destroy();            
             // Сказали что произошел дисконнект
-            wxString s1;
+            m_ss<<wxT("Произошел разрыв соединения..");
+               sb->SetStatusText(m_ss);
             break;
         }
         default:;
