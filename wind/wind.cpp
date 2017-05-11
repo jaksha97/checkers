@@ -20,7 +20,7 @@ check20::check20(){
 	 
 	turn = WHITE;	
 	
-	ready = -1; //NOT READY
+	ready = 0; //NOT READY
 	my_color = 0; //don't know 
 
 	stepClear();
@@ -237,7 +237,7 @@ void AddE::OnConnect(wxCommandEvent & event)
     	return;
     }
     // Показываем диаложек для ввода адреса (или хоста) сервера
-    wxString addr_str = wxGetTextFromUser(_("Введите адрес сервера:"), _("Соединение"), wxT("192.168.0.85"));//localhost
+    wxString addr_str = wxGetTextFromUser(_("Введите адрес сервера:"), _("Соединение"), wxT("192.168.43.32"));//localhost
     // Настраиваем адрес для подключения
     wxIPV4address addr;
     addr.Service(3000);
@@ -284,6 +284,7 @@ if(m_SocketClient)
         m_SocketClient->Destroy();
     }
     m_SocketClient = NULL;
+    dp->m_sc = m_SocketClient;
     dp->pl.ready = 0;
     wxString ms;
     wxMessageBox(wxT("Соединение прервано!"), wxT("CHECKERS 1.0"));
@@ -350,11 +351,14 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
             		case 69:
             		{
             			dp->pl.ready = 1;
-            			wxMessageBox(wxT("Are you READY?"), wxT("GOCHECKERSGO"));
-            			if(dp->pl.turn == dp->pl.my_color)
+           			if(dp->pl.turn == dp->pl.my_color){
 					ss << wxT("Ваш ход..");
-				else
+					wxMessageBox(wxT("Are you READY?\nYour color is WHITE"), wxT("GOCHECKERSGO"));
+				}
+				else{
 					ss << wxT("Ход соперника..");
+					wxMessageBox(wxT("Are you READY?\nYour color is BLACK"), wxT("GOCHECKERSGO"));
+				}
 				sb->SetStatusText(ss);
             			break;
             		}
@@ -367,8 +371,8 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
 					dp->pl.turn = BLACK;
 				else 
 					dp->pl.turn = WHITE;	
-				m_ss<<wxT("Получено..");
-				sb->SetStatusText(m_ss);
+				//m_ss<<wxT("Получено..");
+				//sb->SetStatusText(m_ss);
 				dp->Refresh();            		
             		}
             	}          	
@@ -377,19 +381,25 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
         }
         case wxSOCKET_LOST:
         {
+            if(dp->m_sc != NULL)
+            {
+            wxMessageBox(wxT("Произошел разрыв соединения.."), wxT("CHECKERS 1.0"));
+            m_ss<<wxT("Разрыв соединения..");
+            sb->SetStatusText(m_ss);
+            }
             // Если дисконнект
             sock->GetLocal(addr);
             // Обнулили наш сокет
             if(sock == m_SocketClient)
             {
                 m_SocketClient = NULL;
+                dp->m_sc = m_SocketClient;
             }
             // Удалили
-            sock->Destroy();            
+            sock->Destroy();    
+                    
             // Сказали что произошел дисконнект
-           wxMessageBox(wxT("Произошел разрыв соединения.."), wxT("CHECKERS 1.0"));
-            m_ss<<wxT("Разрыв соединения..");
-               sb->SetStatusText(m_ss);
+           
             break;
         }
         default:;
@@ -449,15 +459,17 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 
 	wxString ss;
 
-	if(pl.turn == WHITE)
-		ss<<wxT("Ход белых..");
-	else
-		ss<<wxT("Ход чёрных..");
+	
 	if(m_sc){
 		if(pl.turn == pl.my_color)
 			ss << wxT("Ваш ход..");
 		else
 			ss << wxT("Ход соперника..");
+	}else{
+		if(pl.turn == WHITE)
+			ss << wxT("Ход белых..");
+		else
+			ss << wxT("Ход чёрных..");
 	}
 	dpsb->SetStatusText(ss);
 	
@@ -480,8 +492,8 @@ void DrawPanel::OnDclick(wxMouseEvent& event){
 			pl.act(num);
 	    		// Отослать сообщение
 	    		wxString m_ss;
-	    		m_ss<<wxT("Отправлено..");
-			dpsb->SetStatusText(m_ss);
+	    		//m_ss<<wxT("Отправлено..");
+			//dpsb->SetStatusText(m_ss);
 	    		m_sc->Write(pl.a, 20*sizeof(int));
 		} else 
 			pl.stepClear();
