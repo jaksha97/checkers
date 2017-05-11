@@ -241,11 +241,14 @@ void AddE::OnConnect(wxCommandEvent & event)
         if(m_SocketClient->IsConnected())
         {
             // Говорим что все ОК
-          m_ss<<wxT("Соединение установлено..");
+            wxMessageBox(wxT("Соединение установлено!"), wxT("CHECKERS 1.0"));
+          if(dp->pl.ready == 0)
+          	m_ss<<wxT("Ждите соперника..");
        
         }
         else
         {
+        wxMessageBox(wxT("Соединение не установлено!"), wxT("CHECKERS 1.0"));
           m_ss<<wxT("Соединение не установлено..");
         }
         sb->SetStatusText(m_ss);
@@ -261,7 +264,9 @@ if(m_SocketClient)
         m_SocketClient->Destroy();
     }
     m_SocketClient = NULL;
+    dp->pl.ready = 0;
     wxString ms;
+    wxMessageBox(wxT("Соединение прервано!"), wxT("CHECKERS 1.0"));
     ms<<wxT("Соединение прервано..");
     sb->SetStatusText(ms);
 };
@@ -272,6 +277,8 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
 	wxIPV4address addr;
 	int buffer[20];
 	wxString m_ss;
+	
+	wxString ss;
     switch(event.GetSocketEvent())
     {
         // Если пришло сообщение
@@ -324,6 +331,11 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
             		{
             			dp->pl.ready = 1;
             			wxMessageBox(wxT("Are you READY?"), wxT("GOCHECKERSGO"));
+            			if(dp->pl.turn == dp->pl.my_color)
+					ss << wxT("Ваш ход..");
+				else
+					ss << wxT("Ход соперника..");
+				sb->SetStatusText(ss);
             			break;
             		}
             		default:{
@@ -406,7 +418,12 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 		ss<<wxT("Ход белых..");
 	else
 		ss<<wxT("Ход чёрных..");
-
+	if(m_sc){
+		if(pl.turn == pl.my_color)
+			ss << wxT("Ваш ход..");
+		else
+			ss << wxT("Ход соперника..");
+	}
 	dpsb->SetStatusText(ss);
 	
 	
