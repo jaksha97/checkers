@@ -195,12 +195,13 @@ AddE::~AddE()
 	if(m_SocketClient){
 		m_SocketClient->Destroy();
 	}
-
+/*
 	delete m_pan;
 	delete bt;
 	delete ng;
 	delete dp;
 	delete menubar;
+*/
 }
 
 
@@ -209,8 +210,22 @@ void AddE::OnQuit(wxCommandEvent& event){
 };
 
 void AddE::OnNew(wxCommandEvent& event){
-	delete dp;
-	dp=new DrawPanel(m_pan, sb, m_SocketClient);
+	/*delete dp;
+	dp=new DrawPanel(m_pan, sb, m_SocketClient);*/
+	for(int i = 0; i < 20; i++)
+		dp->pl.a[i] = FREE;
+	for(int i = 2; i < 6; i++)
+		dp->pl.a[i] = WHITE;
+	for(int i = 12; i < 16; i++)
+		dp->pl.a[i] = BLACK;
+	dp->pl.turn = 1;
+
+	dp->pl.stepClear();
+	dp->Refresh();
+	
+	if(dp->m_sc)
+		dp->m_sc->Write(dp->pl.a, 20*sizeof(int));
+	
 };
 
 void AddE::OnConnect(wxCommandEvent & event)
