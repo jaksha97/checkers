@@ -212,6 +212,7 @@ void AddE::OnQuit(wxCommandEvent& event){
 void AddE::OnNew(wxCommandEvent& event){
 	/*delete dp;
 	dp=new DrawPanel(m_pan, sb, m_SocketClient);*/
+	//new_game = 228
 	for(int i = 0; i < 20; i++)
 		dp->pl.a[i] = FREE;
 	for(int i = 2; i < 6; i++)
@@ -219,12 +220,16 @@ void AddE::OnNew(wxCommandEvent& event){
 	for(int i = 12; i < 16; i++)
 		dp->pl.a[i] = BLACK;
 	dp->pl.turn = 1;
-
+	if(dp->pl.my_color == WHITE){
+		wxMessageBox(wxT("Starting new game?\nYour color is WHITE"), wxT("GOCHECKERSGO"));
+	}else{
+		wxMessageBox(wxT("Starting new game?\nYour color is BLACK"), wxT("GOCHECKERSGO"));
+	}
 	dp->pl.stepClear();
 	dp->Refresh();
-	
+	int new_game = 228;
 	if(dp->m_sc)
-		dp->m_sc->Write(dp->pl.a, 20*sizeof(int));
+		dp->m_sc->Write(&new_game, sizeof(int));
 	
 };
 
@@ -262,7 +267,7 @@ void AddE::OnConnect(wxCommandEvent & event)
         {
             // Говорим что все ОК
             wxMessageBox(wxT("Соединение установлено!"), wxT("CHECKERS 1.0"));
-          if(dp->pl.ready == 0)
+            if(dp->pl.ready == 0)
           	m_ss<<wxT("Ждите соперника..");
        
         }
@@ -311,6 +316,7 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
         //buffer[0] == 1999 - YOU LOOSE
         //buffer[0] == 2000 - DRAW
         //buffer[0] == 69 - READY
+        //buffer[0] == 300 - DISCONNECT
             // Прочитали
             sock->Read(buffer, 20*sizeof(int));
             // Поругались, если ошибка
@@ -360,6 +366,31 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
 					wxMessageBox(wxT("Are you READY?\nYour color is BLACK"), wxT("GOCHECKERSGO"));
 				}
 				sb->SetStatusText(ss);
+            			break;
+            		}
+            		case 300:
+            		{
+            			wxCommandEvent ch;
+            			this->OnDisconnect(ch);
+				break;
+            		}
+            		case 228:
+            		{
+            			if(dp->pl.my_color == WHITE){
+            				wxMessageBox(wxT("Starting new game?\nYour color is WHITE"), wxT("GOCHECKERSGO"));
+            			}else{
+            				wxMessageBox(wxT("Starting new game?\nYour color is BLACK"), wxT("GOCHECKERSGO"));
+            			}
+            			for(int i = 0; i < 20; i++)
+					dp->pl.a[i] = FREE;
+				for(int i = 2; i < 6; i++)
+					dp->pl.a[i] = WHITE;
+				for(int i = 12; i < 16; i++)
+					dp->pl.a[i] = BLACK;
+				dp->pl.turn = 1;
+
+				dp->pl.stepClear();
+				dp->Refresh();
             			break;
             		}
             		default:{
@@ -461,10 +492,13 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 
 	
 	if(m_sc){
-		if(pl.turn == pl.my_color)
-			ss << wxT("Ваш ход..");
-		else
-			ss << wxT("Ход соперника..");
+		if(pl.ready == 1){
+			if(pl.turn == pl.my_color)
+				ss << wxT("Ваш ход..");
+			else
+				ss << wxT("Ход соперника..");
+		}else
+			ss << wxT("Ждите соперника..");
 	}else{
 		if(pl.turn == WHITE)
 			ss << wxT("Ход белых..");
