@@ -220,16 +220,18 @@ void AddE::OnNew(wxCommandEvent& event){
 	for(int i = 12; i < 16; i++)
 		dp->pl.a[i] = BLACK;
 	dp->pl.turn = 1;
-	if(dp->pl.my_color == WHITE){
-		wxMessageBox(wxT("Starting new game?\nYour color is WHITE"), wxT("GOCHECKERSGO"));
-	}else{
-		wxMessageBox(wxT("Starting new game?\nYour color is BLACK"), wxT("GOCHECKERSGO"));
+	if(dp->m_sc){
+		if(dp->pl.my_color == WHITE){
+			wxMessageBox(wxT("Starting new game?\nYour color is WHITE"), wxT("GOCHECKERSGO"));
+		}else{
+			wxMessageBox(wxT("Starting new game?\nYour color is BLACK"), wxT("GOCHECKERSGO"));
+		}
+		int new_game = 228;
+		dp->m_sc->Write(&new_game, sizeof(int));
+	
 	}
 	dp->pl.stepClear();
 	dp->Refresh();
-	int new_game = 228;
-	if(dp->m_sc)
-		dp->m_sc->Write(&new_game, sizeof(int));
 	
 };
 
@@ -276,7 +278,7 @@ void AddE::OnConnect(wxCommandEvent & event)
         wxMessageBox(wxT("Соединение не установлено!"), wxT("CHECKERS 1.0"));
           m_ss<<wxT("Соединение не установлено..");
         }
-        sb->SetStatusText(m_ss);
+        dp->dpsb->SetStatusText(m_ss);
     }
 };
 
@@ -323,7 +325,7 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
             if(sock->Error())
             {
             	m_ss<<wxT("Ошибка чтения данных..");
-               sb->SetStatusText(m_ss);
+               dp->dpsb->SetStatusText(m_ss);
             }
             else
             {
@@ -365,7 +367,7 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
 					ss << wxT("Ход соперника..");
 					wxMessageBox(wxT("Are you READY?\nYour color is BLACK"), wxT("GOCHECKERSGO"));
 				}
-				sb->SetStatusText(ss);
+				dp->dpsb->SetStatusText(ss);
             			break;
             		}
             		case 300:
