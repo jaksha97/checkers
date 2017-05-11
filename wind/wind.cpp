@@ -19,6 +19,9 @@ check20::check20(){
 	pos[19] = wxPoint(20,50);
 	 
 	turn = WHITE;	
+	
+	ready = -1; //NOT READY
+	my_color = 0; //don't know 
 
 	stepClear();
 };
@@ -135,8 +138,6 @@ void check20::act(int i){
 	else 
 		turn = WHITE;	
 	
-
-	//m_SocketClient
 	stepClear();
 
 };
@@ -210,9 +211,13 @@ void AddE::OnNew(wxCommandEvent& event){
 void AddE::OnConnect(wxCommandEvent & event)
 {
     // Если мы вдруг нажали на кнопку КОННЕКТ когда соединение уже установлено, то выход (воoбще, такого не должно случиться...)
-    if(m_SocketClient) return;
+    if(m_SocketClient) 
+    {
+    	wxMessageBox(wxT("You are connected!"), wxT("CHECKERS 1.0"));
+    	return;
+    }
     // Показываем диаложек для ввода адреса (или хоста) сервера
-    wxString addr_str = wxGetTextFromUser(_("Введите адрес сервера:"), _("Соединение"), wxT("localhost"));
+    wxString addr_str = wxGetTextFromUser(_("Введите адрес сервера:"), _("Соединение"), wxT("192.168.0.85"));//localhost
     // Настраиваем адрес для подключения
     wxIPV4address addr;
     addr.Service(3000);
@@ -276,6 +281,7 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
         //buffer[0] == 99 - YOU ARE BLACK
         //buffer[0] == 2001 - YOU WIN
         //buffer[0] == 1999 - YOU LOOSE
+        //buffer[0] == 2000 - DRAW
         //buffer[0] == 69 - READY
             // Прочитали
             sock->Read(buffer, 20*sizeof(int));
@@ -291,43 +297,49 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
             	{
             		case 101:
             		{
-            			
+            			dp->pl.my_color = WHITE;
             			break;
             		}
             		case 99:
             		{
-            			
+            			dp->pl.my_color = BLACK;
             			break;
             		}
             		case 2001:
             		{
-            		
+            			wxMessageBox(wxT("You WON!"), wxT("Tadam!!"));
             			break;
             		}
             		case 1999:
             		{
-            		
+            			wxMessageBox(wxT("You LOOSE :("), wxT("Do not worry!"));
+            			break;
+            		}
+            		case 2000:
+            		{
+            			wxMessageBox(wxT("It's DRAW!"), wxT("Play again?"));
             			break;
             		}
             		case 69:
             		{
-            		
+            			dp->pl.ready = 1;
+            			wxMessageBox(wxT("Are you READY?"), wxT("GOCHECKERSGO"));
             			break;
             		}
-            	}
-            	
-            	
-                //перерисуем
-                for(int i = 0; i < 20; i++){
-                	dp->pl.a[i] = buffer[i];
-                }
-                if(dp->pl.turn == WHITE)
-			dp->pl.turn = BLACK;
-		else 
-			dp->pl.turn = WHITE;	
-                m_ss<<wxT("Получено..");
-                sb->SetStatusText(m_ss);
-                dp->Refresh();
+            		default:{
+            			 //перерисуем
+				for(int i = 0; i < 20; i++){
+					dp->pl.a[i] = buffer[i];
+				}
+				if(dp->pl.turn == WHITE)
+					dp->pl.turn = BLACK;
+				else 
+					dp->pl.turn = WHITE;	
+				m_ss<<wxT("Получено..");
+				sb->SetStatusText(m_ss);
+				dp->Refresh();            		
+            		}
+            	}          	
             }
             break;
         }
@@ -343,7 +355,8 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
             // Удалили
             sock->Destroy();            
             // Сказали что произошел дисконнект
-            m_ss<<wxT("Произошел разрыв соединения..");
+           wxMessageBox(wxT("Произошел разрыв соединения.."), wxT("CHECKERS 1.0"));
+            m_ss<<wxT("Разрыв соединения..");
                sb->SetStatusText(m_ss);
             break;
         }
