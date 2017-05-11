@@ -192,10 +192,15 @@ AddE::AddE(const wxString &title):wxFrame(NULL,wxID_ANY,title,wxDefaultPosition,
 AddE::~AddE()
 {
     // При удалении формы, закрываем наш сокет
-    if(m_SocketClient)
-    {
-        m_SocketClient->Destroy();
-    }
+	if(m_SocketClient){
+		m_SocketClient->Destroy();
+	}
+
+	delete m_pan;
+	delete bt;
+	delete ng;
+	delete dp;
+	delete menubar;
 }
 
 
@@ -319,7 +324,7 @@ void AddE::OnClientSocketEvent(wxSocketEvent & event)
             		}
             		case 1999:
             		{
-            			wxMessageBox(wxT("You LOOSE :("), wxT("Do not worry!"));
+            			wxMessageBox(wxT("You LOST :("), wxT("Do not worry!"));
             			break;
             		}
             		case 2000:
@@ -412,6 +417,21 @@ void DrawPanel::OnPaint(wxPaintEvent& event){
 			dc.SetPen(wxPen(wxColour(0,0,0), 2));
 			dc.DrawCircle(pl.pos[i].x + e, pl.pos[i].y + e, rad);
 		}
+
+	dc.SetPen(wxPen(wxColour(255,0,0), 2));
+	int cross_pos;
+	for(int i = 0; i < 2; i++){
+		for(int j = 0; j < 4; j++){			
+			cross_pos = pl.go[i].dead[j];
+
+			if(cross_pos != -1){					
+					dc.DrawLine(pl.pos[cross_pos] ,wxPoint(pl.pos[cross_pos].x + 2 * e, pl.pos[cross_pos].y + 2 * e));
+					dc.DrawLine(wxPoint(pl.pos[cross_pos].x, pl.pos[cross_pos].y + 2 * e), 
+						wxPoint(pl.pos[cross_pos].x + 2 * e, pl.pos[cross_pos].y));
+			}
+		}
+	}
+
 	wxString ss;
 
 	if(pl.turn == WHITE)
