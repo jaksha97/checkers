@@ -243,7 +243,7 @@ void AddE::OnConnect(wxCommandEvent & event)
     	wxMessageBox(wxT("You are connected!"), wxT("CHECKERS 1.0"));
     	return;
     }
-    // Показываем диаложек для ввода адреса (или хоста) сервера
+    // Показываем диалог для ввода адреса (или хоста) сервера
     wxString addr_str = wxGetTextFromUser(_("Введите адрес сервера:"), _("Соединение"), wxT("192.168.43.32"));//localhost
     // Настраиваем адрес для подключения
     wxIPV4address addr;
